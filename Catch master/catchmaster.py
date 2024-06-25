@@ -1,34 +1,82 @@
 import pygame
 import random
+import os
 pygame.init()
 
 # making a window
-screenHeight = 600
-screenWidth = 400
+SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 400
 
-win = pygame.display.set_mode((screenWidth, screenHeight))
+win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Catch Master')
 
+# background
+backgroundHeight = SCREEN_HEIGHT
+backgroundWidth = SCREEN_WIDTH*2
+backgroundX = 0
+backgroundY = 0
+backgroundVelocity = 0.25
+backgroundImage = pygame.image.load("Assets/background.jpg")
+backgroundImage = pygame.transform.scale(backgroundImage, (backgroundWidth, backgroundHeight))
+backgroundImage2 = backgroundImage
+
+
+
+class Apple(pygame.sprite.Sprite):
+    def __init__(self, sprite, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((objectWidth, objectHeight))
+        self.image = sprite
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+
+    # object movement + collision
+    def update(self):
+        self.rect.move_ip(0,5)
+        if y < self.rect.bottom < (y+playerHeight) and x-(objectWidth/2) < self.rect.centerx < (x+playerWidth)+objectWidth/2:
+            self.kill()
+            global score
+            score += 1
+            object = Apple(appleSprite, random.randint(10, SCREEN_WIDTH-objectWidth-10), random.randint(-SCREEN_HEIGHT, -25))
+            objects.add(object)
+        if self.rect.top > SCREEN_HEIGHT:
+            self.kill()
+
+            
+
+
 # player
-playerHeight = 10
+playerHeight = 20
 playerWidth = 80
-x = (screenHeight - playerWidth) / 2
-y = screenHeight - playerHeight - 50
+x = (SCREEN_HEIGHT - playerWidth) / 2
+y = SCREEN_HEIGHT - playerHeight - 50
 playerVelocity = 7.5
 
-# falling objects
-objectWidth = 20
-objectHeight = 20
-objectVelocity = 5
-objects = []
-for i in range(5):
-    objects.append([random.randint(10, screenWidth-objectWidth-10),random.randint(-screenHeight, -25)])
+basketSprite = pygame.image.load("Assets/basket.png").convert_alpha()
+basketSprite = pygame.transform.scale(basketSprite, (playerWidth, playerHeight))
 
+# falling objects
+objectWidth = 24
+objectHeight = 24
+objectVelocity = 5
+# object sprites
+appleSprite = pygame.image.load("Assets/apple.png").convert_alpha()
+appleSprite = pygame.transform.scale(appleSprite, (objectWidth, objectHeight))
+
+objects = pygame.sprite.Group()
+for i in range(5):
+    object = Apple(appleSprite, random.randint(10, SCREEN_WIDTH-objectWidth-10), random.randint(-SCREEN_HEIGHT, -25))
+    objects.add(object)
     
 
 # game
 score = 0
 myfont = pygame.font.SysFont("sans serif", 50)
+
+
+
+
+
 
 
 FPS = 60
@@ -46,38 +94,51 @@ while run:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and x > playerVelocity:
         x -= playerVelocity
-    if keys[pygame.K_RIGHT] and x < screenWidth - playerWidth - playerVelocity:
+    if keys[pygame.K_RIGHT] and x < SCREEN_WIDTH - playerWidth - playerVelocity:
         x += playerVelocity
-
-    # object movement + collision
-    tempList = []
-    for  obj in objects:
-        objx = obj[0]
-        objy = obj[1]
-
-        # if collided with player
-        if y <= (objy+objectHeight) <= (y+playerHeight) and (x-objectWidth) <= objx <= (x+playerWidth):
-            score += 1
-            tempList.append([random.randint(10, screenWidth-objectWidth-10),random.randint(-screenHeight, -25)])
-        elif objy >= screenHeight:
-            tempList.append([random.randint(10, screenWidth-objectWidth-10),random.randint(-screenHeight, -25)])
-        else:
-            obj[1] += objectVelocity
-            tempList.append(obj)
     
-    objects = tempList
-        
-    # draw display
-    win.fill((0,0,0))
+    # move background
+    if backgroundX <= -backgroundWidth:
+        backgroundX += backgroundWidth
+    else:
+        backgroundX -= backgroundVelocity
+
+    # if no more objects
+    if not objects.sprites():
+        gameEnd()
+        continue
+
+    # background
+    win.blit(backgroundImage, (backgroundX, backgroundY))
+    win.blit(backgroundImage2, (backgroundX+backgroundWidth, backgroundY))
+
     # objects
-    for obj in objects:
-        pygame.draw.rect(win, (255,255,255), (obj[0],obj[1],objectWidth,objectHeight))
+    objects.update()
+    objects.draw(win)
     # player
-    pygame.draw.rect(win, (255,0,0), (x,y,playerWidth,playerHeight))
+    win.blit(basketSprite, (x, y))
     # score
-    scoreText = myfont.render(f'Score: {score}', 1, (255,255,255))
+    scoreText = myfont.render(f'Score: {score}', 1, (0,0,0))
     win.blit(scoreText, (20, 20))
     pygame.display.update()
+
+    def gameEnd():
+        # background
+        win.blit(backgroundImage, (backgroundX, backgroundY))
+        win.blit(backgroundImage2, (backgroundX+backgroundWidth, backgroundY))
+
+        # game over text
+        gameOverText = myfont.render('Game Over!', 1, (0,0,0))
+        win.blit(gameOverText, ((SCREEN_WIDTH-gameOverText.get_width())/2, (SCREEN_HEIGHT-gameOverText.get_height())/2))
+        # score
+        scoreText = myfont.render(f'Score: {score}', 1, (0,0,0))
+        win.blit(scoreText, (20, 20))
+        pygame.display.update()
+
+
+
+
+
 
 
 pygame.QUIT
