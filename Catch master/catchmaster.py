@@ -73,7 +73,8 @@ for i in range(5):
 score = 0
 myfont = pygame.font.SysFont("sans serif", 50)
 
-
+# power ups
+cooldown = 0
 
 
 
@@ -96,6 +97,17 @@ while run:
         x -= playerVelocity
     if keys[pygame.K_RIGHT] and x < SCREEN_WIDTH - playerWidth - playerVelocity:
         x += playerVelocity
+
+    # power ups
+    if cooldown > 0:
+        cooldown -= 1/FPS
+    if keys[pygame.K_f] and cooldown <= 0:
+        cooldown = 10
+        for i in range(5):
+            object = Apple(appleSprite, random.randint(10, SCREEN_WIDTH-objectWidth-10), random.randint(-SCREEN_HEIGHT, -25))
+            objects.add(object)
+            print('sprite added')
+
     
     # move background
     if backgroundX <= -backgroundWidth:
