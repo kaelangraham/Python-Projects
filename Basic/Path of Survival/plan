@@ -1,0 +1,9 @@
+main loop
+player presses button to walk
+each time player walks there is a chance for a encounter
+each time player walks, he loses some food/water/energy
+stats will be displayed at the top
+encounters can be
+- Enemies, allies, discoveries, challenges or story progression
+Objective
+- Find out what happened, then work together with allies to escape
